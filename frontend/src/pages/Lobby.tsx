@@ -7,6 +7,7 @@ import { useArenaWrite } from "../hooks/useArenaWrite";
 import { ARENA_ADDRESS, arenaAbi, DuelStatusLabel } from "../config/contract";
 import { commitFor, generateSecret, storeSecret } from "../lib/secret";
 import { wagmiConfig } from "../config/wagmi";
+import { ChatBox } from "../components/ChatBox";
 import type { Route } from "../lib/router";
 
 export function Lobby({ navigate }: { navigate: (r: Route) => void }) {
@@ -109,6 +110,8 @@ export function Lobby({ navigate }: { navigate: (r: Route) => void }) {
         {!isConnected && <p className="warn">Connect your wallet to create or join a duel.</p>}
         {errorMsg && <p className="error">{errorMsg}</p>}
       </section>
+
+      <ChatBox />
 
       <section className="panel">
         <h2>Open challenges</h2>
