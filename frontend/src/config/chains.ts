@@ -33,6 +33,7 @@ export const robinhoodMainnet = defineChain({
   },
 });
 
-// Which chain the app targets by default. Flip this to robinhoodMainnet only
-// once you understand the real-money implications — see README.
-export const defaultChain = robinhoodTestnet;
+// Which chain the app targets by default. Live on mainnet as of the
+// WhipDuelArena deployment at 0x4c84Ae18CD0C06F1392ddEe1Db57526F29175ed6 —
+// see ARENA_ADDRESS in contract.ts.
+export const defaultChain = robinhoodMainnet;
