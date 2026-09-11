@@ -29,10 +29,18 @@ export function useFightLog(id: bigint | undefined) {
         toBlock: "latest",
       });
       if (cancelled) return;
-      const parsed = logs
+      // Cast through `unknown` here: the RoundResolved ABI entry sits in a
+      // very long human-readable ABI array, and some viem/abitype versions
+      // cap generic inference depth for that case and fall back to a bare
+      // `Log` type with no decoded `args` field at the type level (it's
+      // still present at runtime — viem always decodes it).
+      const decodedLogs = logs as unknown as Array<{
+        args: Partial<RoundEvent> & { duelId?: bigint };
+      }>;
+      const parsed = decodedLogs
         .map((l) => l.args)
         .filter(
-          (a): a is { round: bigint; dmgToB: bigint; dmgToA: bigint; hpA: bigint; hpB: bigint; duelId: bigint } =>
+          (a): a is { round: bigint; dmgToB: bigint; dmgToA: bigint; hpA: bigint; hpB: bigint; duelId?: bigint } =>
             a.round !== undefined
         )
         .map((a) => ({ round: a.round, dmgToB: a.dmgToB, dmgToA: a.dmgToA, hpA: a.hpA, hpB: a.hpB }))
