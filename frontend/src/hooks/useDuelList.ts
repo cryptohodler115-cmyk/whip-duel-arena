@@ -53,13 +53,16 @@ export function useDuelList() {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const logs = await publicClient.getContractEvents({
+      // Cast through unknown: same abitype generic-depth fallback as
+      // elsewhere in this file — the decoded `args` field exists at runtime
+      // but the ABI is long enough that the type falls back to a bare Log.
+      const logs = (await publicClient.getContractEvents({
         address: ARENA_ADDRESS,
         abi: arenaAbi,
         eventName: "DuelCreated",
         fromBlock: 0n,
         toBlock: "latest",
-      });
+      })) as unknown as Array<{ args: { duelId?: bigint } }>;
       if (cancelled) return;
       const ids = [...new Set(logs.map((l) => l.args.duelId).filter((v): v is bigint => v !== undefined))];
       await Promise.all(ids.map(refreshOne));
