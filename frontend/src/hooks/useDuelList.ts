@@ -39,7 +39,7 @@ export function useDuelList() {
           revealedA: d.revealedA,
           revealedB: d.revealedB,
           revealDeadline: d.revealDeadline,
-          status: d.status,
+          status: Number(d.status),
           winner: d.winner,
         });
         return next;

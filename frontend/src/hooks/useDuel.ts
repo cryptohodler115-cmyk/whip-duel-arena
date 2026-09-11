@@ -19,10 +19,10 @@ export type DuelData = {
 
 const ZERO = "0x0000000000000000000000000000000000000000" as Address;
 
-// The getDuel() ABI entry is a long human-readable tuple; some viem/abitype
-// versions cap struct-field type inference depth on entries this long and
-// silently fall back to `unknown` for the return value. Casting through an
-// explicit struct type keeps the rest of the app fully typed regardless.
+// Mirrors the Duel struct decoded from getDuel(). viem decodes every
+// Solidity int/uint width (including uint8) as `bigint`, not `number` — so
+// `status`, an enum stored as uint8, comes back as bigint here even though
+// the rest of the app treats it as a plain number (converted once, below).
 export type DuelStruct = {
   playerA: Address;
   playerB: Address;
@@ -34,7 +34,7 @@ export type DuelStruct = {
   revealedA: boolean;
   revealedB: boolean;
   revealDeadline: bigint;
-  status: number;
+  status: bigint;
   winner: Address;
 };
 
@@ -60,7 +60,7 @@ export function useDuel(id: bigint | undefined) {
       revealedA: d.revealedA,
       revealedB: d.revealedB,
       revealDeadline: d.revealDeadline,
-      status: d.status,
+      status: Number(d.status),
       winner: d.winner,
     });
   }, [publicClient, id]);
