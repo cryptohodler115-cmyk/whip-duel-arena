@@ -1,68 +1,138 @@
 :root {
-  --bg: #14151c;
-  --panel: #1d1f29;
-  --panel-2: #262838;
-  --border: #33364a;
-  --text: #e9e7f0;
-  --muted: #9497ac;
-  --accent: #c8933f;
-  --accent-2: #7a4dd9;
-  --good: #4caf7d;
-  --warn: #d9a23a;
-  --error: #e05a5a;
+  /* An Old School-inspired palette: warm oak/leather browns, a worn gold
+     trim, parchment text. Colors and gradients only — no game assets. */
+  --wood-dark: #241a10;
+  --wood: #3a2a17;
+  --wood-mid: #4b3820;
+  --wood-light: #6b5330;
+  --tan: #c9a86a;
+  --tan-dim: #8a734c;
+  --gold: #ffcf5e;
+  --gold-dim: #b98f34;
+  --parchment: #e9dcb6;
+  --ink: #241a10;
+  --text: #ecdfc0;
+  --muted: #b3a07a;
+  --good: #4caf50;
+  --warn: #ffcf5e;
+  --error: #e0503f;
+  --hp-green: #45b342;
+  --hp-red: #c8362a;
 }
 
 * {
   box-sizing: border-box;
 }
 
+@keyframes torch-flicker {
+  0%,
+  100% {
+    text-shadow:
+      0 0 4px rgba(255, 207, 94, 0.55),
+      0 2px 0 #1a1108;
+  }
+  45% {
+    text-shadow:
+      0 0 9px rgba(255, 207, 94, 0.85),
+      0 2px 0 #1a1108;
+  }
+  60% {
+    text-shadow:
+      0 0 3px rgba(255, 207, 94, 0.4),
+      0 2px 0 #1a1108;
+  }
+}
+
 body {
   margin: 0;
-  background: radial-gradient(circle at top, #1b1c26, var(--bg));
+  min-height: 100vh;
   color: var(--text);
-  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-family: "EB Garamond", Georgia, serif;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.12) 0px,
+      rgba(0, 0, 0, 0.12) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    radial-gradient(ellipse at top, #2c2013 0%, #140e08 75%);
+  background-attachment: fixed;
 }
 
 .app-shell {
-  max-width: 960px;
+  max-width: 1000px;
   margin: 0 auto;
-  padding: 24px 16px 64px;
+  padding: 20px 14px 64px;
 }
 
+/* --- The wooden interface frame wrapping the whole game window --- */
 .app-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 18px;
   flex-wrap: wrap;
   gap: 12px;
+  background: linear-gradient(180deg, var(--wood-mid), var(--wood) 60%, var(--wood-dark));
+  border: 3px solid var(--wood-dark);
+  border-radius: 6px;
+  padding: 12px 18px;
+  box-shadow:
+    inset 0 0 0 1px var(--gold-dim),
+    inset 0 2px 0 rgba(255, 255, 255, 0.08),
+    0 4px 10px rgba(0, 0, 0, 0.5);
 }
 
 .app-header h1 {
+  font-family: "Cinzel", serif;
+  font-weight: 700;
   font-size: 1.5rem;
+  margin: 0;
   cursor: pointer;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
+  color: var(--gold);
+  animation: torch-flicker 4s ease-in-out infinite;
 }
 
 .banner {
   padding: 10px 14px;
-  border-radius: 8px;
+  border-radius: 6px;
   margin-bottom: 20px;
   font-size: 0.9rem;
 }
 
 .banner-warn {
-  background: rgba(217, 162, 58, 0.15);
+  background: rgba(255, 207, 94, 0.12);
   border: 1px solid var(--warn);
   color: var(--warn);
 }
 
+/* --- Parchment-and-oak interface panel, used everywhere --- */
 .panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.15)),
+    linear-gradient(160deg, var(--wood-mid), var(--wood) 55%, var(--wood-dark));
+  border: 3px solid var(--wood-dark);
+  border-radius: 6px;
   padding: 20px;
   margin-bottom: 20px;
+  box-shadow:
+    inset 0 0 0 1px var(--gold-dim),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 4px 12px rgba(0, 0, 0, 0.45);
+  position: relative;
+}
+
+.panel h2 {
+  font-family: "Cinzel", serif;
+  font-weight: 700;
+  color: var(--gold);
+  font-size: 1.15rem;
+  margin: 0 0 10px;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid var(--gold-dim);
+  padding-bottom: 8px;
 }
 
 .create-row {
@@ -78,29 +148,58 @@ label {
   gap: 6px;
   font-size: 0.85rem;
   color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-input {
-  background: var(--panel-2);
-  border: 1px solid var(--border);
-  color: var(--text);
+input,
+textarea {
+  background: #1c140b;
+  border: 2px solid var(--wood-dark);
+  box-shadow: inset 0 0 0 1px var(--gold-dim);
+  color: var(--parchment);
   padding: 8px 10px;
-  border-radius: 6px;
+  border-radius: 4px;
   font-size: 1rem;
+  font-family: "EB Garamond", Georgia, serif;
 }
 
+input:focus,
+textarea:focus {
+  outline: none;
+  box-shadow:
+    inset 0 0 0 1px var(--gold),
+    0 0 6px rgba(255, 207, 94, 0.35);
+}
+
+/* --- OSRS-style beveled gold-trim button --- */
 .btn {
-  border: none;
-  border-radius: 8px;
-  padding: 10px 16px;
-  font-size: 0.95rem;
-  cursor: pointer;
+  border: 2px solid var(--wood-dark);
+  border-radius: 4px;
+  padding: 9px 16px;
+  font-size: 0.9rem;
+  font-family: "Cinzel", serif;
   font-weight: 600;
-  transition: filter 0.15s ease;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    filter 0.15s ease,
+    transform 0.05s ease;
+  box-shadow:
+    inset 0 0 0 1px var(--gold-dim),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 2px 3px rgba(0, 0, 0, 0.4);
 }
 
-.btn:hover {
-  filter: brightness(1.1);
+.btn:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 0 0 1px var(--gold-dim),
+    inset 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 .btn:disabled {
@@ -109,33 +208,37 @@ input {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent), #a5701f);
-  color: #1c1305;
+  background: linear-gradient(180deg, var(--wood-light), var(--wood-mid) 55%, var(--wood));
+  color: var(--gold);
 }
 
 .btn-warn {
-  background: var(--warn);
-  color: #1c1305;
+  background: linear-gradient(180deg, #8a5a1f, #5c3a12);
+  color: var(--gold);
 }
 
 .btn-ghost {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text);
+  background: linear-gradient(180deg, var(--wood-mid), var(--wood-dark));
+  border-color: var(--wood-dark);
+  color: var(--tan);
 }
 
 .connect-status {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .address-pill {
-  background: var(--panel-2);
-  border: 1px solid var(--border);
+  background: #1c140b;
+  border: 1px solid var(--gold-dim);
   border-radius: 999px;
   padding: 6px 12px;
   font-size: 0.85rem;
+  font-family: "VT323", monospace;
+  font-size: 1rem;
+  color: var(--parchment);
 }
 
 .muted {
@@ -150,6 +253,7 @@ input {
   color: var(--error);
 }
 
+/* --- Duel listing, styled like a trading-post ledger --- */
 .duel-table {
   width: 100%;
   border-collapse: collapse;
@@ -160,13 +264,25 @@ input {
 .duel-table td {
   text-align: left;
   padding: 8px 10px;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.9rem;
+  border-bottom: 1px solid var(--wood-mid);
+  font-size: 0.95rem;
 }
 
 .duel-table th {
-  color: var(--muted);
-  font-weight: 500;
+  color: var(--gold);
+  font-family: "Cinzel", serif;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.duel-table tbody tr:hover {
+  background: rgba(255, 207, 94, 0.06);
+}
+
+.duel-table tbody tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.12);
 }
 
 .actions {
@@ -186,9 +302,10 @@ input {
 
 .player-card {
   flex: 1;
-  background: var(--panel-2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 2px solid var(--wood-dark);
+  box-shadow: inset 0 0 0 1px var(--gold-dim);
+  border-radius: 6px;
   padding: 12px;
   display: flex;
   flex-direction: column;
@@ -196,55 +313,69 @@ input {
 }
 
 .player-card.you {
-  border-color: var(--accent);
+  box-shadow:
+    inset 0 0 0 1px var(--gold),
+    0 0 8px rgba(255, 207, 94, 0.3);
 }
 
 .player-card .label {
-  font-size: 0.75rem;
+  font-family: "Cinzel", serif;
+  font-size: 0.72rem;
   color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
 }
 
 .player-card .addr {
-  font-family: monospace;
-  font-size: 0.85rem;
+  font-family: "VT323", monospace;
+  font-size: 1.05rem;
   word-break: break-all;
+  color: var(--parchment);
 }
 
 .badge {
   align-self: flex-start;
-  font-size: 0.75rem;
-  padding: 2px 8px;
+  font-size: 0.72rem;
+  font-family: "Cinzel", serif;
+  padding: 2px 9px;
   border-radius: 999px;
-  background: rgba(148, 151, 172, 0.2);
+  background: rgba(179, 160, 122, 0.18);
   color: var(--muted);
+  border: 1px solid var(--wood-mid);
 }
 
 .badge.good {
-  background: rgba(76, 175, 125, 0.2);
+  background: rgba(76, 175, 80, 0.18);
   color: var(--good);
+  border-color: var(--good);
 }
 
 .vs {
+  font-family: "Cinzel", serif;
   font-weight: 700;
-  color: var(--muted);
+  color: var(--gold-dim);
 }
 
 .countdown {
+  font-family: "VT323", monospace;
+  font-size: 1.1rem;
   font-variant-numeric: tabular-nums;
   color: var(--warn);
 }
 
-/* Arena */
+/* --- Arena --- */
 .arena-stage {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  padding: 20px 0;
-  background: radial-gradient(ellipse at center, #26283a 0%, #16171f 80%);
-  border-radius: 12px;
+  padding: 24px 12px;
+  background:
+    radial-gradient(ellipse at center, rgba(107, 83, 48, 0.35) 0%, rgba(20, 14, 8, 0.6) 75%),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.15) 0px, rgba(0, 0, 0, 0.15) 2px, transparent 2px, transparent 40px);
+  border: 2px solid var(--wood-dark);
+  box-shadow: inset 0 0 0 1px var(--gold-dim);
+  border-radius: 6px;
   position: relative;
 }
 
@@ -260,6 +391,7 @@ input {
 .fighter-svg {
   width: 110px;
   height: 150px;
+  filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.5));
 }
 
 .fighter-svg.defeated {
@@ -288,37 +420,46 @@ input {
 }
 
 .hp-bar {
-  width: 120px;
-  height: 10px;
-  background: #3a1414;
-  border-radius: 6px;
+  width: 130px;
+  height: 12px;
+  background: var(--hp-red);
+  border-radius: 3px;
   overflow: hidden;
-  border: 1px solid var(--border);
+  border: 2px solid var(--wood-dark);
+  box-shadow: inset 0 0 0 1px #000;
 }
 
 .hp-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--good), #2f8b58);
+  background: linear-gradient(180deg, #6bd965, var(--hp-green));
   transition: width 0.4s ease;
 }
 
 .hp-label {
-  font-size: 0.8rem;
-  color: var(--muted);
+  font-family: "VT323", monospace;
+  font-size: 1.05rem;
+  color: var(--tan);
 }
 
 .hitsplash {
   position: absolute;
   top: -10px;
+  font-family: "Cinzel", serif;
   font-weight: 800;
-  font-size: 1.1rem;
-  color: var(--error);
+  font-size: 1.15rem;
+  color: #fff;
+  text-shadow:
+    -1px -1px 0 #7a0f0f,
+    1px -1px 0 #7a0f0f,
+    -1px 1px 0 #7a0f0f,
+    1px 1px 0 #7a0f0f;
   animation: pop 0.6s ease-out;
 }
 
 .hitsplash.miss {
   color: var(--muted);
   font-size: 0.85rem;
+  text-shadow: none;
 }
 
 .hitsplash.left {
@@ -345,8 +486,9 @@ input {
 }
 
 .round-indicator {
+  font-family: "Cinzel", serif;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--gold);
   min-width: 90px;
   text-align: center;
 }
@@ -360,21 +502,139 @@ input {
 .combat-log {
   max-height: 220px;
   overflow-y: auto;
-  background: var(--panel-2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  background: #140d07;
+  border: 2px solid var(--wood-dark);
+  box-shadow: inset 0 0 0 1px var(--gold-dim);
+  border-radius: 4px;
   padding: 10px 14px;
-  font-size: 0.85rem;
+  font-family: "VT323", monospace;
+  font-size: 1rem;
   display: flex;
   flex-direction: column-reverse;
-  gap: 4px;
+  gap: 2px;
+  color: var(--parchment);
 }
 
 .outcome-banner {
   margin-top: 16px;
   padding: 16px;
-  border-radius: 10px;
-  background: rgba(200, 147, 63, 0.15);
-  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: rgba(255, 207, 94, 0.1);
+  border: 2px solid var(--gold-dim);
   text-align: center;
+  font-family: "Cinzel", serif;
+}
+
+/* ============================================================ */
+/* Stake chat — an OSRS-style public chat box for negotiating a  */
+/* wager before either side puts ETH on the line.                */
+/* ============================================================ */
+
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chat-log {
+  height: 260px;
+  overflow-y: auto;
+  background: #100b06;
+  border: 2px solid var(--wood-dark);
+  box-shadow: inset 0 0 0 1px var(--gold-dim), inset 0 2px 6px rgba(0, 0, 0, 0.6);
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-family: "VT323", monospace;
+  font-size: 1.15rem;
+  line-height: 1.25;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.chat-line {
+  word-break: break-word;
+}
+
+.chat-line .chat-name {
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+.chat-line .chat-text {
+  color: var(--parchment);
+}
+
+.chat-line.system .chat-text {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.chat-empty {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.chat-status {
+  font-size: 0.75rem;
+  font-family: "Cinzel", serif;
+  letter-spacing: 0.03em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chat-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--error);
+  box-shadow: 0 0 4px currentColor;
+}
+
+.chat-status-dot.connected {
+  background: var(--good);
+  color: var(--good);
+}
+
+.chat-status-dot.connecting {
+  background: var(--warn);
+  color: var(--warn);
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.chat-input-row input {
+  flex: 1;
+}
+
+.chat-name-input {
+  max-width: 140px;
+}
+
+/* Responsive */
+@media (max-width: 560px) {
+  .app-header {
+    padding: 10px 12px;
+  }
+
+  .app-header h1 {
+    font-size: 1.2rem;
+  }
+
+  .create-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .duel-room-players {
+    flex-direction: column;
+  }
+
+  .chat-name-input {
+    max-width: 100px;
+  }
 }
