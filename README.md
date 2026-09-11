@@ -18,28 +18,44 @@ this points at by default.
 
 ## How it works
 
-1. **Create a duel.** Player A generates a random secret client-side,
-   commits `keccak256(secret, address)` on-chain, and stakes ETH.
-2. **Match it.** Player B does the same — generates their own secret,
-   commits to it, and stakes an equal amount. Both commits are now locked
-   in before either player has seen the other's secret.
-3. **Reveal.** Once both have joined, either player can reveal their secret
-   at any time within a 15-minute window. The moment both are revealed, the
-   contract combines them (`keccak256(secretA, secretB, duelId, address(this))`)
-   into a seed that neither player controlled alone, and immediately runs
-   the fight.
-4. **Fight.** Both fighters use identical fixed stats and an identical
-   weapon (see "Combat model" below), so the entire outcome rides on that
-   seed. Each round, the contract rolls an accuracy check and a damage roll
-   for each side and emits a `RoundResolved` event. Whoever's HP hits 0
-   first loses.
+From a player's seat, it's four steps: **stake → matched → ready up →
+fight.** No wallets full of jargon, no "secret" or "commit" shown anywhere
+in the UI — that's still what's happening underneath (see below), but the
+app handles it for you.
+
+1. **Put a wager up.** Player A stakes ETH to create a duel. Behind the
+   scenes the app also generates a random secret client-side and commits
+   `keccak256(secret, address)` on-chain in the same transaction — you never
+   see or handle this secret directly, it's stored automatically for you
+   (see `frontend/src/lib/secret.ts`).
+2. **Wager matched.** Player B stakes the same amount to join. The app does
+   the same automatic commit for them. Both commits are now locked in
+   before either player could have seen the other's secret.
+3. **Both ready up.** Once matched, each player clicks a single "I'm ready"
+   button. That button is calling the contract's `reveal(secret)` with the
+   secret from step 1/2 — but the player never sees that word. It's a
+   15-minute window; whoever clicks first just waits on the other side.
+4. **Fight — automatically.** The instant both players have readied up, the
+   contract combines the two secrets (`keccak256(secretA, secretB, duelId,
+   address(this))`) into a seed that neither player controlled alone, and
+   immediately runs the fight. Both fighters use identical fixed stats and
+   an identical weapon (see "Combat model" below), so the entire outcome
+   rides on that seed. Each round, the contract rolls an accuracy check and
+   a damage roll for each side and emits a `RoundResolved` event. Whoever's
+   HP hits 0 first loses. The frontend never simulates the fight — the
+   arena replay is a literal readout of `RoundResolved` events, i.e. what
+   already happened on-chain.
 5. **Payout.** The winner's share of the pot is credited internally; they
    call `withdraw()` to pull it out (a pull-payment pattern, so a broken or
    malicious recipient can never block the contract).
 
-The frontend never simulates the fight — it just replays the
-`RoundResolved` events as an animation. What you see in the arena is a
-literal readout of what already happened on-chain.
+Why keep the commit-reveal machinery instead of just picking a random seed
+some other way? Because it's still the part of this contract that makes the
+fight un-riggable — neither player can choose their secret in reaction to
+the other's, since both are locked in before either can ready up. Removing
+that and, say, seeding off `blockhash`/`block.prevrandao` instead would trade
+real fairness for a slightly shorter tx count. The contract didn't change
+between the two — only the words the UI puts in front of it did.
 
 ## Combat model
 
@@ -83,17 +99,20 @@ anywhere close to it.
 
 ## Trust model, and its one known gap
 
+(This section describes the contract, which is unchanged — see "How it
+works" above for why the UI calls this step "ready up" instead of "reveal".)
+
 Commit-reveal is only fair if neither side can choose their secret in
 reaction to the other's — which holds here, since both commits are locked
 in before either reveal happens. But there's a standard residual griefing
 vector in *any* simple commit-reveal scheme: once player A reveals
 publicly, player B already knows their own secret and can compute the
-outcome locally before deciding whether to bother revealing at all. If B
-would lose, B can simply never call `reveal()`.
+outcome locally before deciding whether to bother revealing (readying up)
+at all. If B would lose, B can simply never call `reveal()`.
 
-This contract bounds that with `claimTimeout()`: if the 15-minute reveal
-window closes and only one side revealed, that side claims the whole pot
-by forfeit; if neither revealed, both wagers are refunded. So the worst a
+This contract bounds that with `claimTimeout()`: if the 15-minute ready-up
+window closes and only one side readied up, that side claims the whole pot
+by forfeit; if neither did, both wagers are refunded. So the worst a
 griefer can do is force their opponent to wait out the timer — they can
 never actually keep the money. A production-grade version could remove
 this entirely with a bonded forced-reveal step or a commit-reveal scheme
@@ -120,11 +139,13 @@ frontend/                     Vite + React + TypeScript + wagmi/viem app
   src/config/chains.ts          Robinhood Chain testnet/mainnet definitions
   src/config/contract.ts        <- paste your deployed address here
   src/pages/Lobby.tsx           create / browse / join duels
-  src/pages/DuelRoom.tsx        commit-reveal waiting room, timeout claims
-  src/pages/Arena.tsx           animated fight replay from on-chain events
+  src/pages/DuelRoom.tsx        ready-up waiting room, timeout claims (still commit-reveal under the hood)
+  src/pages/Arena.tsx           animated fight replay from on-chain events, in an original duel-arena backdrop
   src/components/Fighter.tsx    original inline-SVG duelist + whip animation
   src/components/ChatBox.tsx    ephemeral "stake chat" — haggle before you duel
   src/hooks/useChat.ts          WebSocket client for the stake chat
+  src/config/privy.ts           Privy app config (login methods, chains) — needs VITE_PRIVY_APP_ID
+  src/hooks/useSyncPrivyWallet.ts  keeps wagmi's active wallet in sync with whatever Privy logged you in with
 ```
 
 ## Setup
@@ -144,8 +165,39 @@ npm test                # runs test/WhipDuelArena.test.js
 # frontend
 cd frontend
 npm install
+cp .env.example .env   # set VITE_PRIVY_APP_ID — see "Wallet connection" below
 npm run dev
 ```
+
+### Wallet connection (Privy)
+
+Wallet connect/login runs through [Privy](https://www.privy.io/) instead of
+a bare injected-wallet button — players can either connect an existing
+wallet (MetaMask, Rabby, Coinbase Wallet, WalletConnect, ...) or just log in
+with an email address, in which case Privy automatically spins up an
+embedded wallet for them behind the scenes. No signup needed on your end
+beyond creating the Privy app:
+
+1. Create a free app at [dashboard.privy.io](https://dashboard.privy.io).
+2. Under **Settings → Domains**, add both `http://localhost:5173` (for
+   local dev) and your production URL (e.g. your Railway domain).
+3. Copy the **App ID** from Settings, and set it as `VITE_PRIVY_APP_ID` —
+   in `frontend/.env` for local dev, and in Railway's **Variables** tab for
+   the deployed site (Vite only exposes env vars prefixed `VITE_` to the
+   frontend, and it needs to be present at *build* time, so redeploy after
+   setting it).
+
+If `VITE_PRIVY_APP_ID` isn't set, the app renders a banner explaining that
+instead of crashing — same pattern as the "contract not deployed yet"
+banner.
+
+One honest caveat: an embedded wallet Privy creates for an email-login
+player is not a traditional self-custodied seed-phrase wallet by default —
+Privy's infrastructure holds the key material (splitting it between device
+and server shares) unless the player exports it. That's a deliberate
+trade-off for zero-friction onboarding, not a bug, but worth knowing before
+you point real money at it — see "Before you point this at real money"
+below either way.
 
 If anything doesn't compile cleanly, it'll almost certainly be a minor
 Hardhat-toolbox / ethers version-matching issue rather than a logic bug —
@@ -196,8 +248,11 @@ are the only one who can.
 
 ## Known limitations / good next steps
 
-- **Reveal griefing** — bounded by timeout, not eliminated. See "Trust
+- **Ready-up griefing** — bounded by timeout, not eliminated. See "Trust
   model" above.
+- **Embedded wallet custody** — see the caveat at the end of "Wallet
+  connection (Privy)" above; email-login players aren't fully
+  self-custodial unless they export their key.
 - **Unbounded log scan** — `useDuelList` and `useFightLog` scan
   `fromBlock: 0n`. Fine for a testnet demo; swap in a real indexer (or at
   least a recorded deployment block) before this has any real history.
