@@ -7,7 +7,11 @@ import { ARENA_ADDRESS } from "./config/contract";
 
 export default function App() {
   const [route, navigate] = useRoute();
-  const notDeployed = ARENA_ADDRESS === "0x0000000000000000000000000000000000000000";
+  // Cast to a plain string for this comparison — ARENA_ADDRESS is a narrow
+  // literal type (via `as const`), so TS considers a direct comparison
+  // against a different literal to be always-false once a real address is
+  // filled in, which is exactly the case we're detecting here.
+  const notDeployed = (ARENA_ADDRESS as string) === "0x0000000000000000000000000000000000000000";
 
   return (
     <div className="app-shell">
