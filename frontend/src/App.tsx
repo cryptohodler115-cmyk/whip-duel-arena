@@ -4,9 +4,11 @@ import { DuelRoom } from "./pages/DuelRoom";
 import { Arena } from "./pages/Arena";
 import { useRoute } from "./lib/router";
 import { ARENA_ADDRESS } from "./config/contract";
+import { useSyncPrivyWallet } from "./hooks/useSyncPrivyWallet";
 
 export default function App() {
   const [route, navigate] = useRoute();
+  useSyncPrivyWallet();
   // Cast to a plain string for this comparison — ARENA_ADDRESS is a narrow
   // literal type (via `as const`), so TS considers a direct comparison
   // against a different literal to be always-false once a real address is
