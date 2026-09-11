@@ -33,7 +33,14 @@ export function Lobby({ navigate }: { navigate: (r: Route) => void }) {
 
       for (const log of receipt.logs) {
         try {
-          const decoded = decodeEventLog({ abi: arenaAbi, ...log });
+          // Cast the decoded result: the ABI array is long enough that some
+          // viem/abitype versions cap generic inference depth and fall back
+          // to an untyped `args` shape instead of the named-tuple type this
+          // event actually decodes to at runtime.
+          const decoded = decodeEventLog({ abi: arenaAbi, ...log }) as {
+            eventName: string;
+            args: { duelId: bigint };
+          };
           if (decoded.eventName === "DuelCreated") {
             storeSecret(chainId, ARENA_ADDRESS, decoded.args.duelId, secret);
             navigate({ name: "duel", id: decoded.args.duelId });

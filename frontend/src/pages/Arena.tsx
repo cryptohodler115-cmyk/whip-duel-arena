@@ -135,7 +135,7 @@ export function Arena({ id, navigate }: { id: bigint; navigate: (r: Route) => vo
           {finished && outcomeText && (
             <div className="outcome-banner">
               <p>{outcomeText}</p>
-              {duel && duel.status === 3 && myBalance !== undefined && myBalance > 0n && (
+              {duel && duel.status === 3 && myBalance != null && myBalance > 0n && (
                 <button className="btn btn-primary" disabled={isPending} onClick={handleWithdraw}>
                   {isPending ? "Confirm in wallet…" : `Withdraw ${formatEther(myBalance)} ETH`}
                 </button>
