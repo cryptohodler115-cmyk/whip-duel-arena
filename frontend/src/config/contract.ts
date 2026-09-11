@@ -1,8 +1,13 @@
 import { parseAbi } from "viem";
 
-// Fill this in after you run `npm run deploy:testnet` (or :mainnet) from the
-// project root. The deploy script prints the address to paste here.
-export const ARENA_ADDRESS = "0x94E9d380887C8c17d0A010F6Dc62943554Fa9c54" as const;
+// Robinhood Chain mainnet (chainId 4663) deployment — verified against
+// robinhoodchain.blockscout.com after deploying from Remix with a
+// byte-for-byte match of contracts/WhipDuelArena.sol, compiled with the same
+// 0.8.24 + optimizer(200 runs) settings as hardhat.config.js.
+export const ARENA_ADDRESS = "0x4c84Ae18CD0C06F1392ddEe1Db57526F29175ed6" as const;
+
+// Previous testnet deployment (chainId 46630), kept here for reference:
+// 0x94E9d380887C8c17d0A010F6Dc62943554Fa9c54
 
 // Human-readable ABI — matches contracts/WhipDuelArena.sol exactly. Keep the
 // two in sync if you change the contract.
