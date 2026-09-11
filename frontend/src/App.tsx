@@ -1,4 +1,5 @@
 import { ConnectButton } from "./components/ConnectButton";
+import { Landing } from "./pages/Landing";
 import { Lobby } from "./pages/Lobby";
 import { DuelRoom } from "./pages/DuelRoom";
 import { Arena } from "./pages/Arena";
@@ -15,10 +16,14 @@ export default function App() {
   // filled in, which is exactly the case we're detecting here.
   const notDeployed = (ARENA_ADDRESS as string) === "0x0000000000000000000000000000000000000000";
 
+  if (route.name === "landing") {
+    return <Landing navigate={navigate} />;
+  }
+
   return (
     <div className="app-shell">
       <header className="app-header">
-        <h1 onClick={() => navigate({ name: "lobby" })}>⚔ Whip Duel Arena</h1>
+        <h1 onClick={() => navigate({ name: "lobby" })}>🎰 Sand Casino</h1>
         <ConnectButton />
       </header>
 
@@ -34,6 +39,7 @@ export default function App() {
         {route.name === "duel" && <DuelRoom id={route.id} navigate={navigate} />}
         {route.name === "arena" && <Arena id={route.id} navigate={navigate} />}
       </main>
+
     </div>
   );
 }
