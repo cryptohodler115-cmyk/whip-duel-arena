@@ -1,6 +1,7 @@
 import { usePrivy } from "@privy-io/react-auth";
 import { useAccount, useChainId, useSwitchChain } from "wagmi";
 import { defaultChain } from "../config/chains";
+import { markWalletConnectRequested } from "../hooks/useEnforceManualConnect";
 
 export function ConnectButton() {
   const { ready, authenticated, login, logout } = usePrivy();
@@ -17,8 +18,17 @@ export function ConnectButton() {
   }
 
   if (!authenticated) {
+    // This button press is the ONLY place this app ever calls Privy's
+    // login() — see useEnforceManualConnect for why that matters: a
+    // returning player's session is never silently restored, so a wallet
+    // can't get "connected" (and never prompts a signature) without this
+    // exact click happening first.
+    const handleConnect = () => {
+      markWalletConnectRequested();
+      login();
+    };
     return (
-      <button className="btn btn-primary" onClick={login}>
+      <button className="btn btn-primary" onClick={handleConnect}>
         Connect wallet
       </button>
     );
