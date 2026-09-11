@@ -1,22 +1,39 @@
-import { useAccount, useConnect, useDisconnect, useSwitchChain } from "wagmi";
+import { usePrivy } from "@privy-io/react-auth";
+import { useAccount, useChainId, useSwitchChain } from "wagmi";
 import { defaultChain } from "../config/chains";
 
 export function ConnectButton() {
-  const { address, isConnected, chainId } = useAccount();
-  const { connectors, connect, isPending } = useConnect();
-  const { disconnect } = useDisconnect();
+  const { ready, authenticated, login, logout } = usePrivy();
+  const { address } = useAccount();
+  const chainId = useChainId();
   const { switchChain } = useSwitchChain();
 
-  if (!isConnected) {
-    const injectedConnector = connectors[0];
+  if (!ready) {
     return (
-      <button
-        className="btn btn-primary"
-        disabled={isPending}
-        onClick={() => injectedConnector && connect({ connector: injectedConnector })}
-      >
-        {isPending ? "Connecting…" : "Connect wallet"}
+      <button className="btn btn-ghost" disabled>
+        Loading…
       </button>
+    );
+  }
+
+  if (!authenticated) {
+    return (
+      <button className="btn btn-primary" onClick={login}>
+        Connect wallet
+      </button>
+    );
+  }
+
+  if (!address) {
+    // Authenticated with Privy, but wagmi hasn't picked up the active wallet
+    // yet (useSyncPrivyWallet runs a beat after login resolves).
+    return (
+      <div className="connect-status">
+        <span className="muted">Connecting…</span>
+        <button className="btn btn-ghost" onClick={logout}>
+          Disconnect
+        </button>
+      </div>
     );
   }
 
@@ -30,9 +47,9 @@ export function ConnectButton() {
         </button>
       )}
       <span className="address-pill" title={address}>
-        {address?.slice(0, 6)}…{address?.slice(-4)}
+        {address.slice(0, 6)}…{address.slice(-4)}
       </span>
-      <button className="btn btn-ghost" onClick={() => disconnect()}>
+      <button className="btn btn-ghost" onClick={logout}>
         Disconnect
       </button>
     </div>
