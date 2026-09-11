@@ -1,14 +1,16 @@
-import { createConfig, http } from "wagmi";
-import { injected } from "wagmi/connectors";
+import { http } from "wagmi";
+import { createConfig } from "@privy-io/wagmi";
 import { robinhoodMainnet, robinhoodTestnet } from "./chains";
 
-// Injected connector only (MetaMask, Rabby, Coinbase Wallet extension, etc.)
-// — no WalletConnect project ID required, so this runs with zero external
-// signup. Add walletConnect() from 'wagmi/connectors' later if you want
-// mobile wallet support.
+// Built with @privy-io/wagmi's createConfig rather than wagmi's own — same
+// shape, but it wires up the wagmi connector Privy needs to reflect whichever
+// wallet (embedded or external) the player is logged in with through
+// PrivyProvider. No `connectors` array here: Privy manages the connection,
+// and useSyncPrivyWallet (see hooks/) is what makes that wallet "active" for
+// every normal wagmi hook (useAccount, useWriteContract, ...) used elsewhere
+// in this app.
 export const wagmiConfig = createConfig({
   chains: [robinhoodTestnet, robinhoodMainnet],
-  connectors: [injected()],
   transports: {
     [robinhoodTestnet.id]: http(),
     [robinhoodMainnet.id]: http(),

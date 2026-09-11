@@ -49,7 +49,7 @@ export const DuelStatus = {
 export const DuelStatusLabel: Record<number, string> = {
   0: "None",
   1: "Open",
-  2: "Awaiting reveal",
+  2: "Waiting to ready up",
   3: "Resolved",
   4: "Cancelled",
 };
