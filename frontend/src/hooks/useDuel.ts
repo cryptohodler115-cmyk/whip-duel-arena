@@ -19,10 +19,12 @@ export type DuelData = {
 
 const ZERO = "0x0000000000000000000000000000000000000000" as Address;
 
-// Mirrors the Duel struct decoded from getDuel(). viem decodes every
-// Solidity int/uint width (including uint8) as `bigint`, not `number` — so
-// `status`, an enum stored as uint8, comes back as bigint here even though
-// the rest of the app treats it as a plain number (converted once, below).
+// Mirrors the Duel struct decoded from getDuel(). Confirmed against the
+// actual viem/abitype build output: wide integers (uint256, uint64) decode
+// as `bigint`, but `status` (uint8) decodes as a plain `number` — small
+// enough widths stay `number` in this version. `Number(d.status)` below is
+// a harmless no-op in that case; it's kept because it's also correct if a
+// future viem/abitype upgrade widens that mapping to bigint.
 export type DuelStruct = {
   playerA: Address;
   playerB: Address;
@@ -34,7 +36,7 @@ export type DuelStruct = {
   revealedA: boolean;
   revealedB: boolean;
   revealDeadline: bigint;
-  status: bigint;
+  status: number;
   winner: Address;
 };
 
