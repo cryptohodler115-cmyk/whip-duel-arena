@@ -6,10 +6,16 @@ import { Arena } from "./pages/Arena";
 import { useRoute } from "./lib/router";
 import { ARENA_ADDRESS } from "./config/contract";
 import { useSyncPrivyWallet } from "./hooks/useSyncPrivyWallet";
+import { useEnforceManualConnect } from "./hooks/useEnforceManualConnect";
 
 export default function App() {
   const [route, navigate] = useRoute();
   useSyncPrivyWallet();
+  // Privy would otherwise auto-restore a returning player's session (and
+  // silently reconnect their wallet) the instant this page loads. This app
+  // wants wallet connection to only ever happen from the "Connect wallet"
+  // button press — see useEnforceManualConnect for the full reasoning.
+  useEnforceManualConnect();
   // Cast to a plain string for this comparison — ARENA_ADDRESS is a narrow
   // literal type (via `as const`), so TS considers a direct comparison
   // against a different literal to be always-false once a real address is
