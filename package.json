@@ -1,0 +1,22 @@
+{
+  "name": "whip-duel-arena",
+  "version": "0.1.0",
+  "private": true,
+  "description": "On-chain whip-duel wagering arena for Robinhood Chain (EVM). Commit-reveal PvP combat resolved entirely inside a Solidity contract.",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "node": "hardhat node",
+    "deploy:testnet": "hardhat run scripts/deploy.js --network robinhoodTestnet",
+    "deploy:mainnet": "hardhat run scripts/deploy.js --network robinhoodMainnet",
+    "deploy:local": "hardhat run scripts/deploy.js --network localhost",
+    "simulate": "node scripts/simulateCombat.js"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  }
+}
