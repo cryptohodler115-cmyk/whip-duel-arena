@@ -77,6 +77,18 @@ export function Arena({ id, navigate }: { id: bigint; navigate: (r: Route) => vo
       {rounds.length > 0 && (
         <>
           <div className="arena-stage">
+            <div className="arena-backdrop" aria-hidden="true">
+              <div className="arena-wall" />
+              <div className="arena-crowd" />
+              <div className="arena-torch left" />
+              <div className="arena-torch right" />
+              <div className="arena-rope top" />
+              <div className="arena-rope bottom" />
+              <div className="arena-post tl" />
+              <div className="arena-post tr" />
+              <div className="arena-post bl" />
+              <div className="arena-post br" />
+            </div>
             <div className="fighter-slot">
               {/* key={cursor} forces a remount each round so the CSS swing
                   animation restarts instead of staying frozen in its end state */}

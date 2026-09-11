@@ -17,6 +17,14 @@ function useCountdown(target: bigint) {
   return remaining;
 }
 
+// Player-facing wording deliberately hides the commit-reveal mechanics: under
+// the hood this still calls the contract's `reveal(duelId, secret)` (the
+// secret was generated and committed automatically back when you created or
+// joined the duel — see lib/secret.ts), but from the player's side this is
+// just "both sides ready up, then the fight starts," matching a normal PvP
+// queue. The fairness guarantee is unchanged: neither side can pick their
+// secret in reaction to the other's, because both were already committed
+// before either could ready up.
 export function DuelRoom({ id, navigate }: { id: bigint; navigate: (r: Route) => void }) {
   const { address } = useAccount();
   const chainId = useChainId();
@@ -31,9 +39,9 @@ export function DuelRoom({ id, navigate }: { id: bigint; navigate: (r: Route) =>
     return null;
   }, [duel, address]);
 
-  const mySecret = useMemo(() => loadSecret(chainId, ARENA_ADDRESS, id), [chainId, id]);
-  const myRevealed = role === "A" ? duel?.revealedA : role === "B" ? duel?.revealedB : undefined;
-  const opponentRevealed = role === "A" ? duel?.revealedB : role === "B" ? duel?.revealedA : undefined;
+  const myKey = useMemo(() => loadSecret(chainId, ARENA_ADDRESS, id), [chainId, id]);
+  const iAmReady = role === "A" ? duel?.revealedA : role === "B" ? duel?.revealedB : undefined;
+  const opponentReady = role === "A" ? duel?.revealedB : role === "B" ? duel?.revealedA : undefined;
 
   const remaining = useCountdown(duel?.revealDeadline ?? 0n);
   const deadlinePassed = duel?.status === 2 && remaining <= 0;
@@ -44,19 +52,19 @@ export function DuelRoom({ id, navigate }: { id: bigint; navigate: (r: Route) =>
     }
   }, [duel?.status, id, navigate]);
 
-  async function handleReveal() {
-    if (mySecret === null) {
+  async function handleReady() {
+    if (myKey === null) {
       setErrorMsg(
-        "No secret found for this duel in this browser. You can only reveal from the same browser/profile you used to create or join it."
+        "Can't ready up from this browser — this device doesn't have this duel's key. Ready up from the same browser/profile you used to create or join it."
       );
       return;
     }
     setErrorMsg(null);
     try {
-      await call("reveal", [id, mySecret]);
+      await call("reveal", [id, myKey]);
       refresh();
     } catch (err) {
-      setErrorMsg((err as Error).message ?? "Reveal failed");
+      setErrorMsg((err as Error).message ?? "Ready-up failed");
     }
   }
 
@@ -84,7 +92,7 @@ export function DuelRoom({ id, navigate }: { id: bigint; navigate: (r: Route) =>
         <div className={`player-card ${role === "A" ? "you" : ""}`}>
           <span className="label">Player A</span>
           <span className="addr">{duel.playerA}</span>
-          <span className={`badge ${duel.revealedA ? "good" : ""}`}>{duel.revealedA ? "Revealed" : "Waiting"}</span>
+          <span className={`badge ${duel.revealedA ? "good" : ""}`}>{duel.revealedA ? "Ready" : "Not ready"}</span>
         </div>
         <div className="vs">VS</div>
         <div className={`player-card ${role === "B" ? "you" : ""}`}>
@@ -92,7 +100,7 @@ export function DuelRoom({ id, navigate }: { id: bigint; navigate: (r: Route) =>
           <span className="addr">
             {duel.playerB === "0x0000000000000000000000000000000000000000" ? "— open —" : duel.playerB}
           </span>
-          <span className={`badge ${duel.revealedB ? "good" : ""}`}>{duel.revealedB ? "Revealed" : "Waiting"}</span>
+          <span className={`badge ${duel.revealedB ? "good" : ""}`}>{duel.revealedB ? "Ready" : "Not ready"}</span>
         </div>
       </div>
 
@@ -106,25 +114,25 @@ export function DuelRoom({ id, navigate }: { id: bigint; navigate: (r: Route) =>
 
       {duel.status === 2 && !deadlinePassed && (
         <>
-          <p className="countdown">Reveal window closes in {Math.max(0, remaining)}s</p>
-          {role && !myRevealed && (
-            <button className="btn btn-primary" disabled={isPending} onClick={handleReveal}>
-              {isPending ? "Confirm in wallet…" : "Reveal my secret"}
+          <p className="countdown">Ready-up window closes in {Math.max(0, remaining)}s</p>
+          {role && !iAmReady && (
+            <button className="btn btn-primary" disabled={isPending} onClick={handleReady}>
+              {isPending ? "Confirm in wallet…" : "I'm ready — start the fight"}
             </button>
           )}
-          {role && myRevealed && !opponentRevealed && (
+          {role && iAmReady && !opponentReady && (
             <p className="muted">
-              You've revealed. Waiting on your opponent — if they stall past the deadline you can claim the pot by
+              You're ready. Waiting on your opponent — if they stall past the deadline you can claim the pot by
               forfeit.
             </p>
           )}
-          {!role && <p className="muted">You're spectating — only the two duelists can reveal.</p>}
+          {!role && <p className="muted">You're spectating — only the two duelists can ready up.</p>}
         </>
       )}
 
       {duel.status === 2 && deadlinePassed && (
         <>
-          <p className="warn">Reveal window has closed.</p>
+          <p className="warn">Ready-up window has closed.</p>
           <button className="btn btn-primary" onClick={handleClaimTimeout}>
             Claim timeout outcome
           </button>

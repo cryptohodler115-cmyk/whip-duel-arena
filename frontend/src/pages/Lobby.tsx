@@ -166,7 +166,7 @@ export function Lobby({ navigate }: { navigate: (r: Route) => void }) {
                         Enter duel room
                       </button>
                     )}
-                    {d.status === 2 && !isParticipant && <span className="muted">Awaiting reveals</span>}
+                    {d.status === 2 && !isParticipant && <span className="muted">Waiting for ready-up</span>}
                     {d.status === 3 && (
                       <button className="btn btn-ghost" onClick={() => navigate({ name: "arena", id: d.id })}>
                         Watch replay
