@@ -37,13 +37,18 @@ export function Arena({ id, navigate }: { id: bigint; navigate: (r: Route) => vo
   const hpB = current ? current.hpB : HP_START;
   const finished = cursor === rounds.length - 1 && rounds.length > 0;
 
-  const { data: myBalance, refetch: refetchBalance } = useReadContract({
+  // Cast through unknown: this ABI sits in a very long human-readable array,
+  // and some viem/abitype versions cap generic inference depth for the
+  // per-function return type, falling back to a bare `{}` instead of the
+  // `uint256` (bigint) this function actually returns at runtime.
+  const { data: myBalanceRaw, refetch: refetchBalance } = useReadContract({
     address: ARENA_ADDRESS,
     abi: arenaAbi,
     functionName: "balances",
     args: address ? [address] : undefined,
     query: { enabled: !!address },
   });
+  const myBalance = myBalanceRaw as bigint | undefined;
 
   async function handleWithdraw() {
     await call("withdraw", []);

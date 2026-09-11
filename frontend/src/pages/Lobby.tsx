@@ -37,7 +37,7 @@ export function Lobby({ navigate }: { navigate: (r: Route) => void }) {
           // viem/abitype versions cap generic inference depth and fall back
           // to an untyped `args` shape instead of the named-tuple type this
           // event actually decodes to at runtime.
-          const decoded = decodeEventLog({ abi: arenaAbi, ...log }) as {
+          const decoded = decodeEventLog({ abi: arenaAbi, ...log }) as unknown as {
             eventName: string;
             args: { duelId: bigint };
           };
