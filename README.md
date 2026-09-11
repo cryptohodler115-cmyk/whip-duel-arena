@@ -116,12 +116,15 @@ scripts/deploy.js             deploy script
 scripts/simulateCombat.js     dependency-free combat-balance sanity check (node scripts/simulateCombat.js)
 hardhat.config.js             networks: localhost, Robinhood Chain testnet + mainnet
 frontend/                     Vite + React + TypeScript + wagmi/viem app
+  server.js                     production server: serves dist/ + runs the /ws stake-chat room
   src/config/chains.ts          Robinhood Chain testnet/mainnet definitions
   src/config/contract.ts        <- paste your deployed address here
   src/pages/Lobby.tsx           create / browse / join duels
   src/pages/DuelRoom.tsx        commit-reveal waiting room, timeout claims
   src/pages/Arena.tsx           animated fight replay from on-chain events
   src/components/Fighter.tsx    original inline-SVG duelist + whip animation
+  src/components/ChatBox.tsx    ephemeral "stake chat" — haggle before you duel
+  src/hooks/useChat.ts          WebSocket client for the stake chat
 ```
 
 ## Setup
@@ -204,3 +207,10 @@ are the only one who can.
 - **Single weapon/loadout** — intentionally, to match the "whip only, no
   consumables" brief. Adding more weapons/gear means extending the combat
   constants to be per-duel parameters instead of contract-wide constants.
+- **Ephemeral stake chat** — the "Stake chat" box on the lobby (`server.js`,
+  `/ws`) is an unauthenticated, in-memory WebSocket room: message history
+  lives only in the running process and is lost on every redeploy/restart,
+  and nothing stops someone from typing any name they like. It's for
+  haggling over a wager before either side commits ETH, not a source of
+  truth for anything. Swap in a real datastore (and wallet-signature-backed
+  identities) before relying on it for more than that.
